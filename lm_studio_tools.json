@@ -1,0 +1,338 @@
+{
+  "name": "Repository Interface",
+  "description": "Allows LM Studio to interact with code repositories - read files, write code, search, run tests, and check git status",
+  "version": "1.0.0",
+  "author": "LM Studio Local Chatbot",
+  "tools": [
+    {
+      "name": "get_repository_structure",
+      "description": "Get the structure of the repository to understand the codebase layout",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "max_depth": {
+            "type": "integer",
+            "description": "Maximum depth to scan (default: 3)",
+            "default": 3
+          }
+        }
+      },
+      "endpoint": "GET /api/repository/structure"
+    },
+    {
+      "name": "read_file",
+      "description": "Read the contents of a file in the repository",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path to the file relative to repository root",
+            "required": true
+          },
+          "start_line": {
+            "type": "integer",
+            "description": "Starting line number (optional)"
+          },
+          "end_line": {
+            "type": "integer",
+            "description": "Ending line number (optional)"
+          }
+        },
+        "required": ["path"]
+      },
+      "endpoint": "GET /api/repository/file"
+    },
+    {
+      "name": "write_file",
+      "description": "Write content to a file in the repository",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "Path to the file relative to repository root",
+            "required": true
+          },
+          "content": {
+            "type": "string",
+            "description": "Content to write to the file",
+            "required": true
+          },
+          "backup": {
+            "type": "boolean",
+            "description": "Create backup of existing file (default: true)",
+            "default": true
+          }
+        },
+        "required": ["path", "content"]
+      },
+      "endpoint": "POST /api/repository/file"
+    },
+    {
+      "name": "search_files",
+      "description": "Search for text within files in the repository",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Text to search for",
+            "required": true
+          },
+          "file_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "File extensions to search (e.g., ['.py', '.md'])"
+          }
+        },
+        "required": ["query"]
+      },
+      "endpoint": "GET /api/repository/search"
+    },
+    {
+      "name": "run_tests",
+      "description": "Run tests in the repository",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      },
+      "endpoint": "POST /api/repository/tests"
+    },
+    {
+      "name": "get_git_status",
+      "description": "Get the current git status of the repository",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      },
+      "endpoint": "GET /api/repository/git/status"
+    },
+    {
+      "name": "save_conversation",
+      "description": "Save a conversation to persistent memory for future reference",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "messages": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "role": {"type": "string"},
+                "content": {"type": "string"}
+              }
+            },
+            "description": "Array of conversation messages",
+            "required": true
+          },
+          "title": {
+            "type": "string",
+            "description": "Title for the conversation (optional)"
+          },
+          "tags": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Tags to categorize the conversation"
+          }
+        },
+        "required": ["messages"]
+      },
+      "endpoint": "POST /api/memory/conversations"
+    },
+    {
+      "name": "search_conversations",
+      "description": "Search through past conversations",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Text to search for in conversations"
+          },
+          "tags": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Filter by tags"
+          },
+          "days_back": {
+            "type": "integer",
+            "description": "Limit search to conversations within X days"
+          }
+        }
+      },
+      "endpoint": "GET /api/memory/conversations/search"
+    },
+    {
+      "name": "save_context",
+      "description": "Save contextual information (user preferences, project details, etc.)",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Type of context (e.g., 'user_preference', 'project_info')",
+            "required": true
+          },
+          "content": {
+            "type": "object",
+            "description": "The context data to save",
+            "required": true
+          },
+          "key": {
+            "type": "string",
+            "description": "Optional unique key for the context"
+          },
+          "expiry_days": {
+            "type": "integer",
+            "description": "Days until context expires (optional)"
+          }
+        },
+        "required": ["type", "content"]
+      },
+      "endpoint": "POST /api/memory/context"
+    },
+    {
+      "name": "get_context",
+      "description": "Retrieve contextual information",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Specific context key to retrieve"
+          },
+          "type": {
+            "type": "string",
+            "description": "Get all context of this type"
+          }
+        }
+      },
+      "endpoint": "GET /api/memory/context"
+    },
+    {
+      "name": "save_fact",
+      "description": "Save important facts to memory",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "fact": {
+            "type": "string",
+            "description": "The fact to remember",
+            "required": true
+          },
+          "category": {
+            "type": "string",
+            "description": "Category for the fact (default: 'general')",
+            "default": "general"
+          },
+          "source": {
+            "type": "string",
+            "description": "Source of the fact (optional)"
+          },
+          "confidence": {
+            "type": "number",
+            "description": "Confidence level 0.0-1.0 (default: 1.0)",
+            "default": 1.0
+          }
+        },
+        "required": ["fact"]
+      },
+      "endpoint": "POST /api/memory/facts"
+    },
+    {
+      "name": "search_facts",
+      "description": "Search for facts in memory",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Text to search for in facts"
+          },
+          "category": {
+            "type": "string",
+            "description": "Filter by fact category"
+          },
+          "min_confidence": {
+            "type": "number",
+            "description": "Minimum confidence level (default: 0.0)",
+            "default": 0.0
+          }
+        }
+      },
+      "endpoint": "GET /api/memory/facts/search"
+    },
+    {
+      "name": "save_learning",
+      "description": "Save learning insights and patterns",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "topic": {
+            "type": "string",
+            "description": "Topic of the learning",
+            "required": true
+          },
+          "content": {
+            "type": "string",
+            "description": "The learning content/insight",
+            "required": true
+          },
+          "type": {
+            "type": "string",
+            "description": "Type of learning (default: 'general')",
+            "default": "general"
+          },
+          "importance": {
+            "type": "integer",
+            "description": "Importance level 1-10 (default: 5)",
+            "default": 5
+          }
+        },
+        "required": ["topic", "content"]
+      },
+      "endpoint": "POST /api/memory/learning"
+    },
+    {
+      "name": "search_learning",
+      "description": "Search for relevant learning insights",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "topic": {
+            "type": "string",
+            "description": "Topic to find relevant learning for",
+            "required": true
+          },
+          "max_results": {
+            "type": "integer",
+            "description": "Maximum number of results (default: 10)",
+            "default": 10
+          }
+        },
+        "required": ["topic"]
+      },
+      "endpoint": "GET /api/memory/learning/search"
+    },
+    {
+      "name": "get_memory_stats",
+      "description": "Get memory usage statistics",
+      "parameters": {
+        "type": "object",
+        "properties": {}
+      },
+      "endpoint": "GET /api/memory/stats"
+    }
+  ],
+  "base_url": "http://localhost:8080",
+  "authentication": {
+    "type": "none"
+  },
+  "configuration": {
+    "timeout": 30,
+    "max_retries": 3
+  }
+}
